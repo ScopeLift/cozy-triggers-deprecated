@@ -63,5 +63,9 @@
     "hooks": {
       "pre-commit": "yarn prettier"
     }
+  },
+  "volta": {
+    "node": "16.1.0",
+    "yarn": "1.22.10"
   }
 }
