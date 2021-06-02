@@ -12,11 +12,11 @@ async function main(): Promise<void> {
   // await run("compile");
 
   // We get the contract to deploy
-  const CompoundInvariant: ContractFactory = await ethers.getContractFactory('CompoundInvariant');
-  const compoundInvariant: Contract = await CompoundInvariant.deploy('Hello, Buidler!');
-  await compoundInvariant.deployed();
+  const CompoundExchangeRate: ContractFactory = await ethers.getContractFactory('CompoundExchangeRate');
+  const compoundExchangeRate: Contract = await CompoundExchangeRate.deploy('Hello, Buidler!');
+  await compoundExchangeRate.deployed();
 
-  console.log('CompoundInvariant deployed to: ', compoundInvariant.address);
+  console.log('CompoundExchangeRate deployed to: ', compoundExchangeRate.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

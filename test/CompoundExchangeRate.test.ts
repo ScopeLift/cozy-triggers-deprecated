@@ -1,15 +1,15 @@
 import { artifacts, ethers, waffle } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
-import { MockCozyToken, MockCToken, CompoundInvariant } from '../typechain';
+import { MockCozyToken, MockCToken, CompoundExchangeRate } from '../typechain';
 
 const { deployContract } = waffle;
 const { formatBytes32String } = ethers.utils;
 
-describe('CompoundInvariant', function () {
+describe('CompoundExchangeRate', function () {
   let deployer: SignerWithAddress, recipient: SignerWithAddress;
   let mockCUsdc: MockCToken;
-  let trigger: CompoundInvariant;
+  let trigger: CompoundExchangeRate;
   let triggerParams: any[] = []; // trigger params deployment parameters
 
   before(async () => {
@@ -21,17 +21,17 @@ describe('CompoundInvariant', function () {
     const mockCTokenArtifact = await artifacts.readArtifact('MockCToken');
     mockCUsdc = <MockCToken>await deployContract(deployer, mockCTokenArtifact);
 
-    // Deploy  CompoundInvariant trigger
+    // Deploy  CompoundExchangeRate trigger
     triggerParams = [
-      'Compound Invariant Trigger', // name
+      'Compound Exchange Rate Trigger', // name
       'COMP-INV-TRIG', // symbol
-      'Triggers when the Compound invariant that reserves + supply = cash + borrows is violated', // description
+      'Triggers when the Compound exchange rate decreases', // description
       [4], // platform ID for Compound
       recipient.address, // subsidy recipient
       mockCUsdc.address, // address of the Compound CToken market this trigger checks
     ];
-    const compoundInvariantArtifact = await artifacts.readArtifact('CompoundInvariant');
-    trigger = <CompoundInvariant>await deployContract(deployer, compoundInvariantArtifact, triggerParams);
+    const compoundExchangeRateArtifact = await artifacts.readArtifact('CompoundExchangeRate');
+    trigger = <CompoundExchangeRate>await deployContract(deployer, compoundExchangeRateArtifact, triggerParams);
   });
 
   it('deployment: should not deploy if market is already triggered', async () => {
@@ -40,8 +40,8 @@ describe('CompoundInvariant', function () {
     expect(await mockCUsdc.getCash()).to.equal(0);
 
     // Try deploying the trigger
-    const compoundInvariantArtifact = await artifacts.readArtifact('CompoundInvariant');
-    await expect(deployContract(deployer, compoundInvariantArtifact, triggerParams)).to.be.revertedWith(
+    const compoundExchangeRateArtifact = await artifacts.readArtifact('CompoundExchangeRate');
+    await expect(deployContract(deployer, compoundExchangeRateArtifact, triggerParams)).to.be.revertedWith(
       'Market already triggered'
     );
   });
