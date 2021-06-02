@@ -54,20 +54,7 @@ contract CompoundExchangeRate is ITrigger {
     return _percent > tolerance;
   }
 
-  /**
-   * @notice Checks trigger condition, sets isTriggered flag to true if condition is met, and
-   * returns the trigger status
-   */
-  function checkAndToggleTrigger() external override returns (bool) {
-    // Short circuit if trigger already toggled
-    if (isTriggered) return true;
-
-    // Return false if market has not been triggered
-    if (!isMarketTriggered(market)) return false;
-
-    // Otherwise, market has been triggered
-    emit TriggerActivated();
-    isTriggered = true;
-    return isTriggered;
+  function isMarketTriggered() internal view override returns (bool) {
+    return isMarketTriggered(market);
   }
 }
