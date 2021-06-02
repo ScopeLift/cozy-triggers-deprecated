@@ -5,8 +5,8 @@ import "./ICToken.sol";
 import "./ITrigger.sol";
 
 /**
- * @notice Defines a trigger that is toggled if the Compound invariant of reserves + supply = cash + borrows is violted
- * @dev To account for rounding error in the Compound Protocol, there is a margin of 0.000001% on this invariant
+ * @notice Defines a trigger that is toggled if the Compound exchange rate decreases between consecutive checks. Under
+ * normal operation, this value should only increase
  */
 contract CompoundExchangeRate is ITrigger {
   uint256 internal constant WAD = 10**18;
@@ -14,10 +14,12 @@ contract CompoundExchangeRate is ITrigger {
   /// @notice Market this trigger is for
   ICToken public immutable market;
 
-  /// @dev At the time of writing this trigger, the invariant gave a result of 4464789529492704 != 4464789529492715,
-  /// which is an error of ~2.5e-13%, due to rounding errors in Compound. To compensate for this rounding error, the
-  /// trigger condition checks that the two values are within 0.000001% of each other
-  uint256 public constant tolerance = WAD / 1000000; // 0.000001 = 1e-6
+  /// @notice Last read exchangeRateStored
+  uint256 public lastExchangeRate;
+
+  /// @dev Due to rounding errors in the Compound Protocol, the exchangeRateStored may occassionally decrease by small
+  /// amount even when nothing is wrong. A tolerance is applied to ensure we do not accidentally trigger in these cases
+  uint256 public constant tolerance = 100; // 100 wei tolerance
 
   constructor(
     string memory _name,
@@ -30,31 +32,24 @@ contract CompoundExchangeRate is ITrigger {
     // Set market
     market = ICToken(_market);
 
-    // Verify market is not already triggered.
-    // We pass in ICToken(_market) since immutable variables cannot be read during construction
-    require(!isMarketTriggered(ICToken(_market)), "Market already triggered");
+    // Save current exchange rate (immutables can't be read at construction, so we don't use `market` directly)
+    lastExchangeRate = ICToken(_market).exchangeRateStored();
   }
 
   /**
    * @dev Checks the Compound Invariant that reserves + supply = cash + borrows
-   * @param _market Market to check
    */
-  function isMarketTriggered(ICToken _market) internal view returns (bool) {
-    // Calculate the values of each side of the invariant. For totalSupply we convert units from cUSDC to USDC
-    uint256 _totalSupply = (_market.totalSupply() * _market.exchangeRateStored()) / WAD; // adjusted total supply
-    uint256 _lhs = _totalSupply + _market.totalReserves(); // left-hand side of invariant
-    uint256 _rhs = _market.getCash() + _market.totalBorrows(); // right-hand side of invariant
+  function isMarketTriggered() internal override returns (bool) {
+    // Read this blocks exchange rate
+    uint256 _currentExchangeRate = market.exchangeRateStored();
 
-    // Calculate the difference
-    uint256 _diff = _lhs > _rhs ? _lhs - _rhs : _rhs - _lhs; // subtract the smaller value from the larger one
-    uint256 _denominator = _lhs < _rhs ? _lhs : _rhs; // use smaller value as the denominator to be more conservative
+    // Check if current exchange rate is below current exchange rate, accounting for tolerance
+    bool _status = _currentExchangeRate < lastExchangeRate - tolerance;
 
-    // Calculate the percent error
-    uint256 _percent = (_diff * WAD) / _denominator;
-    return _percent > tolerance;
-  }
+    // Save the new exchange rate
+    lastExchangeRate = _currentExchangeRate;
 
-  function isMarketTriggered() internal view override returns (bool) {
-    return isMarketTriggered(market);
+    // Return status
+    return _status;
   }
 }
