@@ -8,7 +8,7 @@ import "./ITrigger.sol";
  * @notice Defines a trigger that is toggled if the Compound invariant of reserves + supply = cash + borrows is violted
  * @dev To account for rounding error in the Compound Protocol, there is a margin of 0.000001% on this invariant
  */
-contract CompoundInvariant is ITrigger {
+contract CompoundExchangeRate is ITrigger {
   uint256 internal constant WAD = 10**18;
 
   /// @notice Market this trigger is for

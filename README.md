@@ -2,7 +2,7 @@
 
 ## Triggers
 
-- `CompoundInvariant`: Triggers if the Compound invariant of `reserveAmount + underlyingSupply == cashAmount + borrowAmount` is broken
+- `CompoundExchangeRate`: Triggers if a Compound market's exchangeRateStored drops between consecutive blocks
 
 ## Usage
 
