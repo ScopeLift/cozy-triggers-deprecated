@@ -27,14 +27,34 @@ abstract contract ITrigger {
   /// @notice Emitted when the trigger is activated
   event TriggerActivated();
 
-  /// @notice Returns array of IDs, where each ID corresponds to a platform covered by this trigger
-  /// @dev See documentation for mapping of ID numbers to platforms
+  /**
+   * @notice Returns array of IDs, where each ID corresponds to a platform covered by this trigger
+   * @dev See documentation for mapping of ID numbers to platforms
+   */
   function getPlatformIds() external view returns (uint256[] memory) {
     return platformIds;
   }
 
-  /// @notice Checks trigger condition, sets isTriggered flag to true if condition is met, and returns isTriggered
-  function checkAndToggleTrigger() external virtual returns (bool);
+  /**
+   * @dev Executes trigger-specific logic to check if market has been triggered
+   */
+  function isMarketTriggered() internal virtual returns (bool);
+
+  /**
+   * @notice Checks trigger condition, sets isTriggered flag to true if condition is met, and returns the trigger status
+   */
+  function checkAndToggleTrigger() external returns (bool) {
+    // Return true if trigger already toggled
+    if (isTriggered) return true;
+
+    // Return false if market has not been triggered
+    if (!isMarketTriggered()) return false;
+
+    // Otherwise, market has been triggered
+    emit TriggerActivated();
+    isTriggered = true;
+    return isTriggered;
+  }
 
   constructor(
     string memory _name,
