@@ -44,7 +44,7 @@ contract CompoundExchangeRate is ITrigger {
     uint256 _currentExchangeRate = market.exchangeRateStored();
 
     // Check if current exchange rate is below current exchange rate, accounting for tolerance
-    bool _status = _currentExchangeRate < lastExchangeRate - tolerance;
+    bool _status = _currentExchangeRate < (lastExchangeRate - tolerance);
 
     // Save the new exchange rate
     lastExchangeRate = _currentExchangeRate;
