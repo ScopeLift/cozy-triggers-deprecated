@@ -78,6 +78,23 @@ describe('CompoundExchangeRate', function () {
       expect(await mockCozyToken.isTriggered()).to.be.true;
     });
 
+    it('properly updates the saved state', async () => {
+      // Get initial state
+      const initialExchangeRate = (await trigger.lastExchangeRate()).toBigInt();
+
+      // Update exchange rate
+      const newExchangeRate = initialExchangeRate + 250n;
+      await mockCUsdc.set(formatBytes32String('exchangeRateStored'), newExchangeRate);
+
+      // Call checkAndToggleTrigger to simulate someone using the protocol
+      await trigger.checkAndToggleTrigger();
+      expect(await trigger.isTriggered()).to.be.false; // sanity check
+
+      // Verify the new state
+      const currentExchangeRate = await trigger.lastExchangeRate();
+      expect(currentExchangeRate.toString()).to.equal(newExchangeRate.toString()); // bigint checks are flaky with chai
+    });
+
     it('properly accounts for tolerance', async () => {
       // Modify the currently stored exchange rate by a set tolerance
       async function modifyLastExchangeRate(amount: bigint) {
