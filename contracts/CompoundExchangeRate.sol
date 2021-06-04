@@ -18,8 +18,10 @@ contract CompoundExchangeRate is ITrigger {
   uint256 public lastExchangeRate;
 
   /// @dev Due to rounding errors in the Compound Protocol, the exchangeRateStored may occassionally decrease by small
-  /// amount even when nothing is wrong. A tolerance is applied to ensure we do not accidentally trigger in these cases
-  uint256 public constant tolerance = 100; // 100 wei tolerance
+  /// amount even when nothing is wrong. A large, very conservative tolerance is applied to ensure we do not
+  /// accidentally trigger in these cases. Even though a smaller tolerance would likely be ok, a non-trivial exploit
+  ///  will most likely cause the exchangeRateStored to decrease by more than 10,000 wei
+  uint256 public constant tolerance = 10000; // 10,000 wei tolerance
 
   constructor(
     string memory _name,
