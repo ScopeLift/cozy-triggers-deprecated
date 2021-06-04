@@ -43,7 +43,7 @@ describe('CompoundExchangeRate', function () {
       expect(platformIds).to.deep.equal(triggerParams[3]); // use `.deep.equal` to compare array equality
       expect(await trigger.recipient()).to.equal(triggerParams[4]);
       expect(await trigger.market()).to.equal(triggerParams[5]);
-      expect(await trigger.tolerance()).to.equal('100');
+      expect(await trigger.tolerance()).to.equal('10000');
     });
   });
 
