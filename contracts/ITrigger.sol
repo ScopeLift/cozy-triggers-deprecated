@@ -37,18 +37,20 @@ abstract contract ITrigger {
 
   /**
    * @dev Executes trigger-specific logic to check if market has been triggered
+   * @return True if trigger condition occured, false otherwise
    */
-  function isMarketTriggered() internal virtual returns (bool);
+  function checkTriggerCondition() internal virtual returns (bool);
 
   /**
    * @notice Checks trigger condition, sets isTriggered flag to true if condition is met, and returns the trigger status
+   * @return True if trigger condition occured, false otherwise
    */
   function checkAndToggleTrigger() external returns (bool) {
     // Return true if trigger already toggled
     if (isTriggered) return true;
 
     // Return false if market has not been triggered
-    if (!isMarketTriggered()) return false;
+    if (!checkTriggerCondition()) return false;
 
     // Otherwise, market has been triggered
     emit TriggerActivated();

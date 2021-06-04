@@ -11,7 +11,7 @@ import "./ITrigger.sol";
 contract CompoundExchangeRate is ITrigger {
   uint256 internal constant WAD = 10**18;
 
-  /// @notice Market this trigger is for
+  /// @notice Address of CToken market protected by this trigger
   ICToken public immutable market;
 
   /// @notice Last read exchangeRateStored
@@ -37,9 +37,11 @@ contract CompoundExchangeRate is ITrigger {
   }
 
   /**
-   * @dev Checks the Compound Invariant that reserves + supply = cash + borrows
+   * @dev Checks if a CToken's exchange rate decreased. The exchange rate should never decrease, but may occasionally
+   * decrease slightly due to rounding errors
+   * @return True if trigger condition occured (i.e. exchange rate decreased), false otherwise
    */
-  function isMarketTriggered() internal override returns (bool) {
+  function checkTriggerCondition() internal override returns (bool) {
     // Read this blocks exchange rate
     uint256 _currentExchangeRate = market.exchangeRateStored();
 
