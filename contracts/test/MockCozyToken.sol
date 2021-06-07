@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
-import "../ICToken.sol";
-import "../ITrigger.sol";
+import "../interfaces/ICToken.sol";
+import "../interfaces/ITrigger.sol";
 
 /**
  * @notice Mock MockCozyToken, for testing the return value of checkAndToggleTrigger

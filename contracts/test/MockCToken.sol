@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
-import "../ICToken.sol";
+import "../interfaces/ICToken.sol";
 
 /**
  * @notice Mock CToken, implemented the same way as a Compound CToken, but with configurable parameters for testing
