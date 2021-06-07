@@ -9,7 +9,7 @@ describe('YearnSharePrice', function () {
   let deployer: SignerWithAddress, recipient: SignerWithAddress;
   let mockYUsdc: MockYVault;
   let trigger: YearnSharePrice;
-  let triggerParams: any[] = []; // trigger params deployment parameters
+  let triggerParams: (string | number[])[] = []; // trigger params deployment parameters
 
   before(async () => {
     [deployer, recipient] = await ethers.getSigners();
