@@ -67,9 +67,9 @@ async function main(): Promise<void> {
   // DEFINE PARAMETERS
   // Define constructor parameters for trigger
   const triggerParams = [
-    'Yearn USDC Vault Share Price Trigger', // name
-    'yUSDC-SP-TRIG', // symbol
-    'Triggers when the Yearn USDC vault share price decreases', // description
+    'Yearn USDC V2 Vault Share Price Trigger', // name
+    'yUSDC-V2-SP-TRIG', // symbol
+    'Triggers when the Yearn USDC V2 vault share price decreases', // description
     [1], // platform ID for Yearn
     deployerWallet.address, // subsidy recipient is deployer
     '0x5f18C75AbDAe578b483E5F43f12a39cF75b973a9', // This is the yUSDC vault address
@@ -78,11 +78,11 @@ async function main(): Promise<void> {
   // EXECUTE DEPLOYMENTS
   logHeader('Deployments');
   const overrides = { gasPrice };
-  const triggerFactory: ContractFactory = await ethers.getContractFactory('YearnSharePrice');
+  const triggerFactory: ContractFactory = await ethers.getContractFactory('YearnV2SharePrice');
   console.log(chalk.dim('    Deployment in progress...'));
   const trigger: Contract = await triggerFactory.deploy(...triggerParams, overrides);
   await trigger.deployed();
-  logDeploy('YearnSharePrice USDC Trigger', trigger.address);
+  logDeploy('YearnV2SharePrice USDC Trigger', trigger.address);
 
   // DONE
   console.log(chalk.green.bold('\n🎉 🥳 🎉 Deployment complete! 🎉 🥳 🎉'));
