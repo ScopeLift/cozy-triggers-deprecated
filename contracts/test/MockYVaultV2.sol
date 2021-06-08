@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
-import "../interfaces/IYVault.sol";
+import "../interfaces/IYVaultV2.sol";
 
 /**
  * @notice Mock yVault, implemented the same way as a Yearn vault, but with configurable parameters for testing
  */
-contract MockYVault is IYVault {
+contract MockYVaultV2 is IYVaultV2 {
   uint256 public override pricePerShare;
   uint256 public underlyingDecimals = 6; // decimals of USDC underlying
 

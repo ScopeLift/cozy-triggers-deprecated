@@ -1,14 +1,15 @@
 import { artifacts, ethers, waffle } from 'hardhat';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
-import { MockCozyToken, MockYVault, YearnSharePrice } from '../typechain';
+import { MockCozyToken, MockYVaultV2, YearnV2SharePrice } from '../typechain';
 
 const { deployContract } = waffle;
+const { parseUnits } = ethers.utils;
 
-describe('YearnSharePrice', function () {
+describe('YearnV2SharePrice', function () {
   let deployer: SignerWithAddress, recipient: SignerWithAddress;
-  let mockYUsdc: MockYVault;
-  let trigger: YearnSharePrice;
+  let mockYUsdc: MockYVaultV2;
+  let trigger: YearnV2SharePrice;
   let triggerParams: (string | number[])[] = []; // trigger params deployment parameters
 
   before(async () => {
@@ -17,21 +18,21 @@ describe('YearnSharePrice', function () {
 
   beforeEach(async () => {
     // Deploy Mock yVault
-    const mockYVaultArtifact = await artifacts.readArtifact('MockYVault');
-    mockYUsdc = <MockYVault>await deployContract(deployer, mockYVaultArtifact);
+    const mockYVaultY2Artifact = await artifacts.readArtifact('MockYVaultV2');
+    mockYUsdc = <MockYVaultV2>await deployContract(deployer, mockYVaultY2Artifact);
 
-    // Deploy YearnSharePrice trigger
+    // Deploy YearnV2SharePrice trigger
     triggerParams = [
-      'Yearn USDC Vault Share Price Trigger', // name
-      'yUSDC-SP-TRIG', // symbol
-      'Triggers when the Yearn USDC vault share price decreases', // description
+      'Yearn USDC V2 Vault Share Price Trigger', // name
+      'yUSDC-V2-SP-TRIG', // symbol
+      'Triggers when the Yearn USDC V2 vault share price decreases', // description
       [1], // platform ID for Yearn
       recipient.address, // TODO set subsidy recipient
       mockYUsdc.address, // TODO set address of the yVault market this trigger checks
     ];
 
-    const YearnSharePriceArtifact = await artifacts.readArtifact('YearnSharePrice');
-    trigger = <YearnSharePrice>await deployContract(deployer, YearnSharePriceArtifact, triggerParams);
+    const YearnV2SharePriceArtifact = await artifacts.readArtifact('YearnV2SharePrice');
+    trigger = <YearnV2SharePrice>await deployContract(deployer, YearnV2SharePriceArtifact, triggerParams);
   });
 
   describe('Deployment', () => {
@@ -43,7 +44,7 @@ describe('YearnSharePrice', function () {
       expect(platformIds).to.deep.equal(triggerParams[3]); // use `.deep.equal` to compare array equality
       expect(await trigger.recipient()).to.equal(triggerParams[4]);
       expect(await trigger.market()).to.equal(triggerParams[5]);
-      expect(await trigger.tolerance()).to.equal('10000');
+      expect(await trigger.tolerance()).to.equal(parseUnits('0.5', 18));
     });
   });
 
@@ -97,9 +98,9 @@ describe('YearnSharePrice', function () {
 
     it('properly accounts for tolerance', async () => {
       // Modify the currently stored share price by a set tolerance
-      async function modifyLastPricePerShare(amount: bigint) {
+      async function modifyLastPricePerShare(numerator: bigint, denominator: bigint) {
         const lastPricePerShare = (await trigger.lastPricePerShare()).toBigInt();
-        const newPricePerShare = lastPricePerShare + amount;
+        const newPricePerShare = (lastPricePerShare * numerator) / denominator;
         await mockYUsdc.set(newPricePerShare);
         expect(await mockYUsdc.pricePerShare()).to.equal(newPricePerShare);
       }
@@ -110,23 +111,23 @@ describe('YearnSharePrice', function () {
         expect(await trigger.isTriggered()).to.equal(status);
       }
 
-      // Read the trigger's tolerance
+      // Read the trigger's tolerance (which is stored as percentage with 18 decimals such that 1e18 = 100%)
       const tolerance = (await trigger.tolerance()).toBigInt();
 
       // Increase share price to a larger value, should NOT be triggered (sanity check)
-      await modifyLastPricePerShare(100n);
+      await modifyLastPricePerShare(101n, 100n); // 1% increase
       await assertTriggerStatus(false);
 
       // Decrease share price by an amount less than tolerance, should NOT be triggered
-      await modifyLastPricePerShare(tolerance - 1n);
+      await modifyLastPricePerShare(99n, 100n); // 1% decrease
       await assertTriggerStatus(false);
 
       // Decrease share price by an amount exactly equal to tolerance, should NOT be triggered
-      await modifyLastPricePerShare(-tolerance);
+      await modifyLastPricePerShare(tolerance, 10n ** 18n);
       await assertTriggerStatus(false);
 
       // Decrease share price by an amount more than tolerance, should be triggered
-      await modifyLastPricePerShare(-tolerance - 1n);
+      await modifyLastPricePerShare(tolerance - 1n, 10n ** 18n);
       await assertTriggerStatus(true);
     });
   });
