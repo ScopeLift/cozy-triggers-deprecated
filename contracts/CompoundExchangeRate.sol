@@ -23,6 +23,10 @@ contract CompoundExchangeRate is ITrigger {
   ///  will most likely cause the exchangeRateStored to decrease by more than 10,000 wei
   uint256 public constant tolerance = 10000; // 10,000 wei tolerance
 
+  /**
+   * @param _market Is the address of the Compound market this trigger should protect
+   * @dev For definitions of other constructor parameters, see ITrigger.sol
+   */
   constructor(
     string memory _name,
     string memory _symbol,
