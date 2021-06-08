@@ -14,7 +14,7 @@ contract YearnV2SharePrice is ITrigger {
   /// @notice Vault this trigger is for
   IYVaultV2 public immutable market;
 
-  /// @notice Last read exchangeRateStored
+  /// @notice Last read pricePerShare
   uint256 public lastPricePerShare;
 
   /// @dev In Yearn V2 vaults, the pricePerShare decreases immediately after a harvest, and typically ramps up over the
@@ -24,6 +24,10 @@ contract YearnV2SharePrice is ITrigger {
   /// to be made whole. Therefore this trigger requires a large 50% drop to minimize false positives
   uint256 public constant tolerance = 5e17; // 50%, represented on a scale where 1e18 = 100%
 
+  /**
+   * @param _market Is the address of the Yearn V2 vault this trigger should protect
+   * @dev For definitions of other constructor parameters, see ITrigger.sol
+   */
   constructor(
     string memory _name,
     string memory _symbol,
@@ -35,7 +39,7 @@ contract YearnV2SharePrice is ITrigger {
     // Set vault
     market = IYVaultV2(_market);
 
-    // Save current exchange rate (immutables can't be read at construction, so we don't use `market` directly)
+    // Save current share price (immutables can't be read at construction, so we don't use `market` directly)
     lastPricePerShare = IYVaultV2(_market).pricePerShare();
   }
 
@@ -43,13 +47,13 @@ contract YearnV2SharePrice is ITrigger {
    * @dev Checks the yVault pricePerShare
    */
   function checkTriggerCondition() internal override returns (bool) {
-    // Read this blocks exchange rate
+    // Read this blocks share price
     uint256 _currentPricePerShare = market.pricePerShare();
 
-    // Check if current exchange rate is below current exchange rate, accounting for tolerance
+    // Check if current share price is below current share price, accounting for tolerance
     bool _status = _currentPricePerShare < ((lastPricePerShare * tolerance) / 1e18);
 
-    // Save the new exchange rate
+    // Save the new share price
     lastPricePerShare = _currentPricePerShare;
 
     // Return status
