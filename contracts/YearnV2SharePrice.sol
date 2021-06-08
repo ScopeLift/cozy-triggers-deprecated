@@ -21,7 +21,9 @@ contract YearnV2SharePrice is ITrigger {
   /// next six hours. Therefore we cannot simply check that the pricePerShare increases. Instead, we consider the vault
   /// triggered if the pricePerShare drops by more than 50% from it's previous value. This is conservative, but
   /// previous Yearn bugs resulted in pricePerShare drops of 0.5% – 10%, and were only temporary drops with users able
-  /// to be made whole. Therefore this trigger requires a large 50% drop to minimize false positives
+  /// to be made whole. Therefore this trigger requires a large 50% drop to minimize false positives. The tolerance
+  /// is defined such that we trigger if: currentPricePerShare < lastPricePerShare * tolerance / 1e18. This means
+  /// if you want to trigger after a 20% drop, you should set the tolerance to 1e18 - 0.2e18 = 0.8e18 = 8e17
   uint256 public constant tolerance = 5e17; // 50%, represented on a scale where 1e18 = 100%
 
   /**
