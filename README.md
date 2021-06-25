@@ -1,5 +1,7 @@
 # Cozy Triggers
 
+**⚠️ NOTE: This repository is deprecated and has been replaced with https://github.com/ScopeLift/cozy-triggers**
+
 ## Triggers contained in this repository
 
 - `CompoundExchangeRate`: Triggers if a Compound market's `exchangeRateStored` drops between consecutive blocks
